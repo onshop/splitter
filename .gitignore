@@ -1,0 +1,37 @@
+/tmp-589348H9PzfL7hclqB/
+/tmp-589517vKsfmW459tm7/
+
+# builder
+contracts/build/
+cache
+artifacts
+
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+
+# Dependency directory
+node_modules
+
+# Debug log from npm
+npm-debug.log
+
+# local env variables
+.env
+
+# truffle build directory
+build/
+
+# macOS
+.DS_Store
+
+# truffle
+.node-xmlhttprequest-*
+
+# IntelliJ IDE
+.idea
+
+
