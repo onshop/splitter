@@ -17,7 +17,7 @@ class App extends Component {
 
             // Set web3, accounts, and contract to the state, and then proceed with an
             // example of interacting with the contract's methods.
-            this.setState({ web3, accounts, contract: null }, this.runExample);
+            this.setState({ web3, accounts});
 
         } catch (error) {
             // Catch any errors for any of the above operations.
@@ -28,19 +28,13 @@ class App extends Component {
         }
     };
 
-    runExample = async () => {
-
-    };
-
     render() {
         if (!this.state.web3) {
-            return <div>Loading Web3, accounts, and contract...</div>;
+            return <div>Loading Web3, accounts</div>;
         }
         return (
             <div className="App">
-                <h1>Good to Go!</h1>
-                <p>Your Truffle Box is installed and ready.</p>
-                <h2>Smart Contract Example</h2>
+                <h1>Splitter</h1>
 
             </div>
         );
