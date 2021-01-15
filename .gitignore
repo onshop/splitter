@@ -1,3 +1,5 @@
+truffle-config.js
+
 /tmp-*
 
 # truffle build directory
