@@ -23,7 +23,7 @@ contract Splitter {
         uint split = msg.value / 2;
 
         recipient1.transfer(split);
-        recipient1.transfer(split);
+        recipient2.transfer(split);
 
         uint remainder = msg.value % 2;
 
