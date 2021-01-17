@@ -12,7 +12,7 @@ contract('Splitter', async accounts => {
         splitter = await Splitter.deployed();
     });
 
-    it('Alice sends 5 wei, 4 wei is split equally between recipients and 1 wei change refunded', async () => {
+    it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei change refunded', async () => {
 
         let initAliceBalance = await web3.eth.getBalance(aliceAddress);
         let initBobBalance = await web3.eth.getBalance(bobAddress);
