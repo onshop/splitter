@@ -8,8 +8,8 @@ contract('Splitter', async accounts => {
         let gasUsed = receipt.receipt.gasUsed;
         let tx = await web3.eth.getTransaction(receipt.tx);
         let gasPrice = tx.gasPrice;
-        return web3.utils.toBN(gasUsed * gasPrice);
 
+        return web3.utils.toBN(gasUsed * gasPrice);
     };
 
     const senderAddress = accounts[1]; //'0xA2aDe56e2c69589eaFA636C845b296718D5766fd';
