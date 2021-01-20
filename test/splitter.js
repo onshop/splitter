@@ -11,9 +11,9 @@ contract('Splitter', async accounts => {
         return web3.utils.toBN(gasUsed * gasPrice);
     };
 
-    const senderAddress = accounts[1]; //'0xA2aDe56e2c69589eaFA636C845b296718D5766fd';
-    const RecipientOneAddress = accounts[2]; //'0x20601F1Ddb44E28b1511EdBD316A368D80116408';
-    const RecipientTwoAddress = accounts[3]; //'0x24F1500890505ceD8534502ab403F20ce99feea0';
+    const senderAddress = accounts[1];
+    const RecipientOneAddress = accounts[2];
+    const RecipientTwoAddress = accounts[3];
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
