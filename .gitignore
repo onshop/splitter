@@ -3,8 +3,8 @@ truffle-config.js
 /tmp-*
 
 # truffle build directory
-client/src/contracts
-contracts/artifacts
+/client/src/contracts/
+/contracts/artifacts/
 
 *.swp
 *.swo
@@ -30,5 +30,6 @@ npm-debug.log
 
 # IntelliJ IDE
 .idea
+
 
 
