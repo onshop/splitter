@@ -4,6 +4,7 @@ truffle-config.js
 
 # truffle build directory
 client/src/contracts
+contracts/artifacts
 
 *.swp
 *.swo
