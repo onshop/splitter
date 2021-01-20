@@ -34,7 +34,7 @@ contract Splitter {
         uint remainder = msg.value % 2;
 
         if(remainder != 0) {
-            balances[msg.sender] = remainder;
+            balances[msg.sender] += remainder;
         }
 
         emit Deposit(now, msg.sender, recipient1, recipient2, split, remainder);
@@ -46,7 +46,7 @@ contract Splitter {
 
     function withdraw(uint amount) public returns(bool) {
         require(amount > 0, "The value must be greater than 0");
-        require(balances[msg.sender] > amount, "There are insufficient funds");
+        require(balances[msg.sender] >= amount, "There are insufficient funds");
         msg.sender.transfer(amount);
         balances[msg.sender] -= amount;
         emit WithDraw(now, msg.sender, amount);
