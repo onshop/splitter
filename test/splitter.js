@@ -58,7 +58,7 @@ contract('Splitter', async accounts => {
         }, 'TestEvent should be emitted with correct parameters');
     })
 
-    it("Transaction reverts if the first recipient is the same as the second recipient", async () => {
+    it("Transaction reverts if the deposit amount is zero", async () => {
         await truffleAssert.reverts(
             splitter.splitDeposit(RecipientTwoAddress, RecipientOneAddress,{from: senderAddress, value: 0}),
             "The value must be greater than 0"
