@@ -15,7 +15,6 @@ contract Splitter {
     );
 
     event WithDraw(
-        uint date,
         address indexed withdrawer,
         uint amount
     );
@@ -49,7 +48,7 @@ contract Splitter {
         require(balances[msg.sender] >= amount, "There are insufficient funds");
         msg.sender.transfer(amount);
         balances[msg.sender] -= amount;
-        emit WithDraw(now, msg.sender, amount);
+        emit WithDraw(msg.sender, amount);
 
         return true;
     }
