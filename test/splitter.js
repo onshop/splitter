@@ -11,6 +11,15 @@ contract('Splitter', async accounts => {
         return web3.utils.toBN(gasUsed * gasPrice);
     };
 
+    let checkEvent = async eventName => {
+        let result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
+
+        await truffleAssert.eventNotEmitted(
+            result,
+            eventName
+        );
+    }
+
     const senderAddress = accounts[1];
     const RecipientOneAddress = accounts[2];
     const RecipientTwoAddress = accounts[3];
@@ -70,6 +79,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(RecipientTwoAddress, RecipientOneAddress,{from: senderAddress, value: 0}),
             "The value must be greater than 0"
         );
+        checkEvent("Deposit");
     });
 
     it("Transaction reverts if the first recipient is the same as the second recipient", async () => {
@@ -77,6 +87,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(RecipientOneAddress, RecipientOneAddress,{from: senderAddress, value: 4}),
             "The first recipient is the same as the second recipient"
         );
+        checkEvent("Deposit");
     });
 
     it("Transaction reverts if the sender's address is also a recipient", async () => {
@@ -84,6 +95,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(senderAddress, RecipientTwoAddress, {from: senderAddress, value: 4}),
             "The sender cannot also be a recipient"
         );
+        checkEvent("Deposit");
     });
 
     it('Second recipient can successfully withdraw 2 wei', async () => {
@@ -131,6 +143,7 @@ contract('Splitter', async accounts => {
             splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress}),
             "There are insufficient funds"
         );
+        checkEvent("Withdraw");
     });
 
     it("Second recipient attempts to withdraw zero", async () => {
@@ -139,6 +152,7 @@ contract('Splitter', async accounts => {
             splitter.withdraw(web3.utils.toBN(0), {from: RecipientTwoAddress}),
             "The value must be greater than 0"
         );
+        checkEvent("Withdraw");
     });
 
 });

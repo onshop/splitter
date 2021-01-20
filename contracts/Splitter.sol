@@ -46,9 +46,9 @@ contract Splitter {
     function withdraw(uint amount) public returns(bool) {
         require(amount > 0, "The value must be greater than 0");
         require(balances[msg.sender] >= amount, "There are insufficient funds");
-        msg.sender.transfer(amount);
         balances[msg.sender] -= amount;
         emit WithDraw(msg.sender, amount);
+        msg.sender.transfer(amount);
 
         return true;
     }
