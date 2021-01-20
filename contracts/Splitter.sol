@@ -38,10 +38,6 @@ contract Splitter {
         emit Deposit(now, msg.sender, recipient1, recipient2, split, remainder);
     }
 
-    function getBalance(address addr) public view returns(uint) {
-        return balances[addr];
-    }
-
     function withdraw(uint amount) public returns(bool) {
         require(amount > 0, "The value must be greater than 0");
         require(balances[msg.sender] >= amount, "There are insufficient funds");

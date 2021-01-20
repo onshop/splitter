@@ -35,9 +35,9 @@ contract('Splitter', async accounts => {
         let initSenderEthBalance = await web3.eth.getBalance(senderAddress);
         initSenderEthBalance = web3.utils.toBN(initSenderEthBalance);
 
-        let initSenderContractBalance = await splitter.getBalance(senderAddress);
-        let initRecipientOneContractBalance = await splitter.getBalance(RecipientOneAddress);
-        let initRecipientTwoContractBalance = await splitter.getBalance(RecipientTwoAddress);
+        let initSenderContractBalance = await splitter.balances(senderAddress);
+        let initRecipientOneContractBalance = await splitter.balances(RecipientOneAddress);
+        let initRecipientTwoContractBalance = await splitter.balances(RecipientTwoAddress);
 
         // Perform transactions
         const receipt = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
@@ -54,14 +54,15 @@ contract('Splitter', async accounts => {
 
         assert.strictEqual(aliceEthBalance.toString(10), expectedSenderEthBalance.toString(10));
 
-        // Check the contract balances of all participants
+        // Calculate the expected contract balances
         let expectedSenderContractBalance = initSenderContractBalance.add(remainder);
         let expectedRecipientOneContractBalance = initRecipientOneContractBalance.add(splitAmount);
         let expectedRecipientTwoContractBalance = initRecipientTwoContractBalance.add(splitAmount);
 
-        let aliceContractBalance = await splitter.getBalance(senderAddress);
-        let bobContractBalance = await splitter.getBalance(RecipientOneAddress);
-        let carolContractBalance = await splitter.getBalance(RecipientTwoAddress);
+        // Get the actual contract balances
+        let aliceContractBalance = await splitter.balances(senderAddress);
+        let bobContractBalance = await splitter.balances(RecipientOneAddress);
+        let carolContractBalance = await splitter.balances(RecipientTwoAddress);
 
         assert.strictEqual(aliceContractBalance.toString(10), expectedSenderContractBalance.toString(10));
         assert.strictEqual(bobContractBalance.toString(10), expectedRecipientOneContractBalance.toString(10));
@@ -111,7 +112,7 @@ contract('Splitter', async accounts => {
         await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: depositAmount});
 
         // Take snapshot of the recipients new contract balance
-        let initRecipientTwoContractBalance = await splitter.getBalance(RecipientTwoAddress);
+        let initRecipientTwoContractBalance = await splitter.balances(RecipientTwoAddress);
         initRecipientTwoContractBalance = web3.utils.toBN(initRecipientTwoContractBalance)
 
         // Recipient withdraws
@@ -120,7 +121,7 @@ contract('Splitter', async accounts => {
 
         // Get the recipient's new ETH and contract balances
         let carolEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
-        let carolContractBalance = await splitter.getBalance(RecipientTwoAddress);
+        let carolContractBalance = await splitter.balances(RecipientTwoAddress);
 
         // Calculate the expected new ETH and contract balances
         let expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
