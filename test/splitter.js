@@ -1,4 +1,3 @@
-const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
 const Splitter = artifacts.require("./Splitter.sol");
 
@@ -35,19 +34,18 @@ contract('Splitter', async accounts => {
         const receipt = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
 
         const cost = await gasCost(receipt);
-
-        console.log("cost = " + cost);
-
         const transfer = web3.utils.toBN(5);
         const splitAmount = web3.utils.toBN(2);
         const remainder = web3.utils.toBN(1);
 
+        // Check sender's changed ETH balance
         let expectedSenderEthBalance = initSenderEthBalance.sub(cost).sub(web3.utils.toBN(transfer));
         let aliceEthBalance = await web3.eth.getBalance(senderAddress);
         aliceEthBalance = web3.utils.toBN(aliceEthBalance);
 
         assert.strictEqual(aliceEthBalance.toString(10), expectedSenderEthBalance.toString(10));
 
+        // Check the contract balances of all participants
         let expectedSenderContractBalance = initSenderContractBalance.add(remainder);
         let expectedRecipientOneContractBalance = initRecipientOneContractBalance.add(splitAmount);
         let expectedRecipientTwoContractBalance = initRecipientTwoContractBalance.add(splitAmount);
@@ -93,20 +91,26 @@ contract('Splitter', async accounts => {
         let depositAmount = web3.utils.toWei(web3.utils.toBN(1), "ether");
         const withDrawAmount = web3.utils.toBN(2);
 
+        // Take snapshot of the recipients ETH balance
         let initRecipientTwoEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
         initRecipientTwoEthBalance = web3.utils.toBN(initRecipientTwoEthBalance);
 
+        // Deposit into the contract
         await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: depositAmount});
 
+        // Take snapshot of the recipients new contract balance
         let initRecipientTwoContractBalance = await splitter.getBalance(RecipientTwoAddress);
         initRecipientTwoContractBalance = web3.utils.toBN(initRecipientTwoContractBalance)
 
+        // Recipient withdraws
         const receipt = await splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress});
-
         const cost = await gasCost(receipt);
 
+        // Get the recipient's new ETH and contract balances
         let carolEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
         let carolContractBalance = await splitter.getBalance(RecipientTwoAddress);
+
+        // Calculate the expected new ETH and contract balances
         let expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
         let expectedRecipientTwoContractBalance = initRecipientTwoContractBalance.sub(withDrawAmount);
 
