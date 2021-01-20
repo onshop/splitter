@@ -132,3 +132,4 @@ contract('Splitter', async accounts => {
     });
 
 });
+
