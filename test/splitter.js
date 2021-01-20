@@ -4,6 +4,14 @@ const Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', async accounts => {
 
+    let gasCost = async receipt => {
+        let gasUsed = receipt.receipt.gasUsed;
+        let tx = await web3.eth.getTransaction(receipt.tx);
+        let gasPrice = tx.gasPrice;
+        return web3.utils.toBN(gasUsed * gasPrice);
+
+    };
+
     const senderAddress = accounts[1]; //'0xA2aDe56e2c69589eaFA636C845b296718D5766fd';
     const RecipientOneAddress = accounts[2]; //'0x20601F1Ddb44E28b1511EdBD316A368D80116408';
     const RecipientTwoAddress = accounts[3]; //'0x24F1500890505ceD8534502ab403F20ce99feea0';
@@ -15,6 +23,7 @@ contract('Splitter', async accounts => {
 
     it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei sent to the senders balance', async () => {
 
+        // Take snapshot of initial balances
         let initSenderEthBalance = await web3.eth.getBalance(senderAddress);
         initSenderEthBalance = web3.utils.toBN(initSenderEthBalance);
 
@@ -22,12 +31,12 @@ contract('Splitter', async accounts => {
         let initRecipientOneContractBalance = await splitter.getBalance(RecipientOneAddress);
         let initRecipientTwoContractBalance = await splitter.getBalance(RecipientTwoAddress);
 
+        // Perform transactions
         const receipt = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
 
-        const gasUsed = receipt.receipt.gasUsed;
-        const tx = await web3.eth.getTransaction(receipt.tx);
-        const gasPrice = tx.gasPrice;
-        const cost = web3.utils.toBN(gasUsed * gasPrice);
+        const cost = await gasCost(receipt);
+
+        console.log("cost = " + cost);
 
         const transfer = web3.utils.toBN(5);
         const splitAmount = web3.utils.toBN(2);
@@ -94,10 +103,7 @@ contract('Splitter', async accounts => {
 
         const receipt = await splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress});
 
-        const gasUsed = receipt.receipt.gasUsed;
-        const tx = await web3.eth.getTransaction(receipt.tx);
-        const gasPrice = tx.gasPrice;
-        const cost = web3.utils.toBN(gasUsed * gasPrice);
+        const cost = await gasCost(receipt);
 
         let carolEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
         let carolContractBalance = await splitter.getBalance(RecipientTwoAddress);
