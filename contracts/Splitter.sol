@@ -6,7 +6,6 @@ contract Splitter {
     mapping(address => uint) public balances;
 
     event Deposit(
-        uint date,
         address indexed sender,
         address indexed recipient1,
         address indexed recipient2,
@@ -35,7 +34,7 @@ contract Splitter {
             balances[msg.sender] += remainder;
         }
 
-        emit Deposit(now, msg.sender, recipient1, recipient2, split, remainder);
+        emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
     }
 
     function withdraw(uint amount) public returns(bool) {
