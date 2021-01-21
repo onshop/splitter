@@ -3,12 +3,14 @@ const Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', async accounts => {
 
-    let gasCost = async receipt => {
+    const { toBN } = web3.utils;
+
+    let getGasCost = async receipt => {
         const gasUsed = receipt.receipt.gasUsed;
         const tx = await web3.eth.getTransaction(receipt.tx);
         const gasPrice = tx.gasPrice;
 
-        return web3.utils.toBN(gasUsed * gasPrice);
+        return toBN(gasUsed * gasPrice);
     };
 
     let checkEventNotEmitted = async eventName => {
@@ -33,7 +35,7 @@ contract('Splitter', async accounts => {
 
         // Take snapshot of initial balances
         let initSenderEthBalance = await web3.eth.getBalance(senderAddress);
-        initSenderEthBalance = web3.utils.toBN(initSenderEthBalance);
+        initSenderEthBalance = toBN(initSenderEthBalance);
 
         const initSenderContractBalance = await splitter.balances(senderAddress);
         const initRecipientOneContractBalance = await splitter.balances(RecipientOneAddress);
@@ -42,15 +44,15 @@ contract('Splitter', async accounts => {
         // Perform transactions
         const receipt = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
 
-        const cost = await gasCost(receipt);
-        const transfer = web3.utils.toBN(5);
-        const splitAmount = web3.utils.toBN(2);
-        const remainder = web3.utils.toBN(1);
+        const cost = await getGasCost(receipt);
+        const transfer = toBN(5);
+        const splitAmount = toBN(2);
+        const remainder = toBN(1);
 
         // Check sender's changed ETH balance
-        const expectedSenderEthBalance = initSenderEthBalance.sub(cost).sub(web3.utils.toBN(transfer));
+        const expectedSenderEthBalance = initSenderEthBalance.sub(cost).sub(toBN(transfer));
         let aliceEthBalance = await web3.eth.getBalance(senderAddress);
-        aliceEthBalance = web3.utils.toBN(aliceEthBalance);
+        aliceEthBalance = toBN(aliceEthBalance);
 
         assert.strictEqual(aliceEthBalance.toString(10), expectedSenderEthBalance.toString(10));
 
@@ -101,23 +103,23 @@ contract('Splitter', async accounts => {
 
     it('Second recipient can successfully withdraw 2 wei', async () => {
 
-        const depositAmount = web3.utils.toWei(web3.utils.toBN(1), "ether");
-        const withDrawAmount = web3.utils.toBN(2);
+        const depositAmount = web3.utils.toWei(toBN(1), "ether");
+        const withDrawAmount = toBN(2);
 
         // Take snapshot of the recipients ETH balance
         let initRecipientTwoEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
-        initRecipientTwoEthBalance = web3.utils.toBN(initRecipientTwoEthBalance);
+        initRecipientTwoEthBalance = toBN(initRecipientTwoEthBalance);
 
         // Deposit into the contract
         await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: depositAmount});
 
         // Take snapshot of the recipients new contract balance
         let initRecipientTwoContractBalance = await splitter.balances(RecipientTwoAddress);
-        initRecipientTwoContractBalance = web3.utils.toBN(initRecipientTwoContractBalance)
+        initRecipientTwoContractBalance = toBN(initRecipientTwoContractBalance)
 
         // Recipient withdraws
         const receipt = await splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress});
-        const cost = await gasCost(receipt);
+        const cost = await getGasCost(receipt);
 
         // Get the recipient's new ETH and contract balances
         const carolEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
@@ -138,7 +140,7 @@ contract('Splitter', async accounts => {
 
     it("Second recipient attempts to withdraw more than is available in the balance", async () => {
 
-        withDrawAmount = web3.utils.toWei(web3.utils.toBN(5), "ether");
+        withDrawAmount = web3.utils.toWei(toBN(5), "ether");
 
         await truffleAssert.reverts(
             splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress}),
@@ -150,7 +152,7 @@ contract('Splitter', async accounts => {
     it("Second recipient attempts to withdraw zero", async () => {
 
         await truffleAssert.reverts(
-            splitter.withdraw(web3.utils.toBN(0), {from: RecipientTwoAddress}),
+            splitter.withdraw(toBN(0), {from: RecipientTwoAddress}),
             "The value must be greater than 0"
         );
         checkEventNotEmitted("Withdraw");
