@@ -5,7 +5,7 @@ contract('Splitter', async accounts => {
 
     const { toBN } = web3.utils;
 
-    let getGasCost = async receipt => {
+    const getGasCost = async receipt => {
         const gasUsed = receipt.receipt.gasUsed;
         const tx = await web3.eth.getTransaction(receipt.tx);
         const gasPrice = tx.gasPrice;
@@ -13,7 +13,7 @@ contract('Splitter', async accounts => {
         return toBN(gasUsed * gasPrice);
     };
 
-    let checkEventNotEmitted = async eventName => {
+    const checkEventNotEmitted = async eventName => {
         let result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
 
         await truffleAssert.eventNotEmitted(
