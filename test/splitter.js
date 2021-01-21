@@ -13,12 +13,11 @@ contract('Splitter', async accounts => {
         return toBN(gasUsed * gasPrice);
     };
 
-    const checkEventNotEmitted = async eventName => {
+    const checkEventNotEmitted = async () => {
         let result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
 
         await truffleAssert.eventNotEmitted(
-            result,
-            eventName
+            result
         );
     }
 
@@ -82,7 +81,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(RecipientTwoAddress, RecipientOneAddress,{from: senderAddress, value: 0}),
             "The value must be greater than 0"
         );
-        checkEventNotEmitted("Deposit");
+        checkEventNotEmitted();
     });
 
     it("Transaction reverts if the first recipient is the same as the second recipient", async () => {
@@ -90,7 +89,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(RecipientOneAddress, RecipientOneAddress,{from: senderAddress, value: 4}),
             "The first recipient is the same as the second recipient"
         );
-        checkEventNotEmitted("Deposit");
+        checkEventNotEmitted();
     });
 
     it("Transaction reverts if the sender's address is also a recipient", async () => {
@@ -98,7 +97,7 @@ contract('Splitter', async accounts => {
             splitter.splitDeposit(senderAddress, RecipientTwoAddress, {from: senderAddress, value: 4}),
             "The sender cannot also be a recipient"
         );
-        checkEventNotEmitted("Deposit");
+        checkEventNotEmitted();
     });
 
     it('Second recipient can successfully withdraw 2 wei', async () => {
@@ -146,7 +145,7 @@ contract('Splitter', async accounts => {
             splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress}),
             "There are insufficient funds"
         );
-        checkEventNotEmitted("Withdraw");
+        checkEventNotEmitted();
     });
 
     it("Second recipient attempts to withdraw zero", async () => {
@@ -155,7 +154,7 @@ contract('Splitter', async accounts => {
             splitter.withdraw(toBN(0), {from: RecipientTwoAddress}),
             "The value must be greater than 0"
         );
-        checkEventNotEmitted("Withdraw");
+        checkEventNotEmitted();
     });
 
 });
