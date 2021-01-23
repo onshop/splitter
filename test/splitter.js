@@ -14,7 +14,7 @@ contract('Splitter', async accounts => {
     };
 
     const checkEventNotEmitted = async () => {
-        let result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
+        const result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
 
         await truffleAssert.eventNotEmitted(
             result
@@ -31,9 +31,7 @@ contract('Splitter', async accounts => {
     it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei sent to the senders balance', async () => {
 
         // Take snapshot of initial balances
-        let initSenderEthBalance = await web3.eth.getBalance(senderAddress);
-        initSenderEthBalance = toBN(initSenderEthBalance);
-
+        const initSenderEthBalance = toBN(await web3.eth.getBalance(senderAddress));
         const initSenderContractBalance = await splitter.balances(senderAddress);
         const initRecipientOneContractBalance = await splitter.balances(recipientOneAddress);
         const initRecipientTwoContractBalance = await splitter.balances(recipientTwoAddress);
@@ -48,8 +46,7 @@ contract('Splitter', async accounts => {
 
         // Check sender's changed ETH balance
         const expectedSenderEthBalance = initSenderEthBalance.sub(cost).sub(toBN(transfer));
-        let aliceEthBalance = await web3.eth.getBalance(senderAddress);
-        aliceEthBalance = toBN(aliceEthBalance);
+        const aliceEthBalance = toBN(await web3.eth.getBalance(senderAddress));
 
         assert.strictEqual(aliceEthBalance.toString(10), expectedSenderEthBalance.toString(10));
 
