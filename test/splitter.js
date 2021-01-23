@@ -5,9 +5,9 @@ contract('Splitter', async accounts => {
 
     const { toBN } = web3.utils;
 
-    const getGasCost = async receipt => {
-        const gasUsed = receipt.receipt.gasUsed;
-        const tx = await web3.eth.getTransaction(receipt.tx);
+    const getGasCost = async txObj => {
+        const gasUsed = txObj.receipt.gasUsed;
+        const tx = await web3.eth.getTransaction(txObj.tx);
         const gasPrice = tx.gasPrice;
 
         return toBN(gasUsed * gasPrice);
@@ -21,9 +21,8 @@ contract('Splitter', async accounts => {
         );
     }
 
-    const senderAddress = accounts[1];
-    const RecipientOneAddress = accounts[2];
-    const RecipientTwoAddress = accounts[3];
+    const [ senderAddress, RecipientOneAddress, RecipientTwoAddress] = accounts;
+
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
@@ -41,9 +40,9 @@ contract('Splitter', async accounts => {
         const initRecipientTwoContractBalance = await splitter.balances(RecipientTwoAddress);
 
         // Perform transactions
-        const receipt = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
+        const txObj = await splitter.splitDeposit(RecipientOneAddress, RecipientTwoAddress, {from: senderAddress, value: 5});
 
-        const cost = await getGasCost(receipt);
+        const cost = await getGasCost(txObj);
         const transfer = toBN(5);
         const splitAmount = toBN(2);
         const remainder = toBN(1);
@@ -69,7 +68,7 @@ contract('Splitter', async accounts => {
         assert.strictEqual(bobContractBalance.toString(10), expectedRecipientOneContractBalance.toString(10));
         assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
 
-        truffleAssert.eventEmitted(receipt, 'Deposit', (ev) => {
+        truffleAssert.eventEmitted(txObj, 'Deposit', (ev) => {
             return  ev.sender === senderAddress && ev.recipient1 === RecipientOneAddress &&
                     ev.recipient2 === RecipientTwoAddress && ev.amount.toString(10) === "2" &&
                     ev.remainder.toString(10) === "1";
@@ -117,8 +116,8 @@ contract('Splitter', async accounts => {
         initRecipientTwoContractBalance = toBN(initRecipientTwoContractBalance)
 
         // Recipient withdraws
-        const receipt = await splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress});
-        const cost = await getGasCost(receipt);
+        const txObj = await splitter.withdraw(withDrawAmount, {from: RecipientTwoAddress});
+        const cost = await getGasCost(txObj);
 
         // Get the recipient's new ETH and contract balances
         const carolEthBalance = await web3.eth.getBalance(RecipientTwoAddress);
@@ -131,7 +130,7 @@ contract('Splitter', async accounts => {
         assert.strictEqual(carolEthBalance.toString(10), expectedRecipientTwoEthBalance.toString(10));
         assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
 
-        truffleAssert.eventEmitted(receipt, "WithDraw", (ev) => {
+        truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
             return  ev.withdrawer === RecipientTwoAddress && ev.amount.toString(10) === "2";
         }, 'TestEvent should be emitted with correct parameters');
 
