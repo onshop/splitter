@@ -32,9 +32,9 @@ contract('Splitter', async accounts => {
 
         // Take snapshot of initial balances
         const initSenderEthBalance = toBN(await web3.eth.getBalance(senderAddress));
-        const initSenderContractBalance = await splitter.balances(senderAddress);
-        const initRecipientOneContractBalance = await splitter.balances(recipientOneAddress);
-        const initRecipientTwoContractBalance = await splitter.balances(recipientTwoAddress);
+        const initSenderOwed = await splitter.balances(senderAddress);
+        const initRecipientOneOwed = await splitter.balances(recipientOneAddress);
+        const initRecipientTwoOwed = await splitter.balances(recipientTwoAddress);
 
         // Perform transactions
         const txObj = await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: 5});
@@ -51,18 +51,18 @@ contract('Splitter', async accounts => {
         assert.strictEqual(aliceEthBalance.toString(10), expectedSenderEthBalance.toString(10));
 
         // Calculate the expected contract balances
-        const expectedSenderContractBalance = initSenderContractBalance.add(remainder);
-        const expectedRecipientOneContractBalance = initRecipientOneContractBalance.add(splitAmount);
-        const expectedRecipientTwoContractBalance = initRecipientTwoContractBalance.add(splitAmount);
+        const expectedSenderOwed = initSenderOwed.add(remainder);
+        const expectedRecipientOneOwed = initRecipientOneOwed.add(splitAmount);
+        const expectedRecipientTwoOwed = initRecipientTwoOwed.add(splitAmount);
 
         // Get the actual contract balances
-        const aliceContractBalance = await splitter.balances(senderAddress);
-        const bobContractBalance = await splitter.balances(recipientOneAddress);
-        const carolContractBalance = await splitter.balances(recipientTwoAddress);
+        const aliceOwed = await splitter.balances(senderAddress);
+        const bobOwed = await splitter.balances(recipientOneAddress);
+        const carolOwed = await splitter.balances(recipientTwoAddress);
 
-        assert.strictEqual(aliceContractBalance.toString(10), expectedSenderContractBalance.toString(10));
-        assert.strictEqual(bobContractBalance.toString(10), expectedRecipientOneContractBalance.toString(10));
-        assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
+        assert.strictEqual(aliceOwed.toString(10), expectedSenderOwed.toString(10));
+        assert.strictEqual(bobOwed.toString(10), expectedRecipientOneOwed.toString(10));
+        assert.strictEqual(carolOwed.toString(10), expectedRecipientTwoOwed.toString(10));
 
         truffleAssert.eventEmitted(txObj, 'Deposit', (ev) => {
             return  ev.sender === senderAddress &&
@@ -102,14 +102,14 @@ contract('Splitter', async accounts => {
         const depositAmount = toWei(toBN(1), "ether");
         const withDrawAmount = toBN(2);
 
-        // Take snapshot of the recipients ETH balance
+        // Take snapshot of theOwed recipients ETH balance
         const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
 
         // Deposit into the contract
         await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: depositAmount});
 
         // Take snapshot of the recipients new contract balance
-        const initRecipientTwoContractBalance = toBN(await splitter.balances(recipientTwoAddress));
+        const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
 
         // Recipient withdraws
         const txObj = await splitter.withdraw(withDrawAmount, {from: recipientTwoAddress});
@@ -117,14 +117,14 @@ contract('Splitter', async accounts => {
 
         // Get the recipient's new ETH and contract balances
         const carolEthBalance = await web3.eth.getBalance(recipientTwoAddress);
-        const carolContractBalance = await splitter.balances(recipientTwoAddress);
+        const carolOwed = await splitter.balances(recipientTwoAddress);
 
         // Calculate the expected new ETH and contract balances
         const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
-        const expectedRecipientTwoContractBalance = initRecipientTwoContractBalance.sub(withDrawAmount);
+        const expectedRecipientTwoOwed = initRecipientTwoOwed.sub(withDrawAmount);
 
         assert.strictEqual(carolEthBalance.toString(10), expectedRecipientTwoEthBalance.toString(10));
-        assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
+        assert.strictEqual(carolOwed.toString(10), expectedRecipientTwoOwed.toString(10));
 
         truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
             return  ev.withdrawer === recipientTwoAddress &&
