@@ -3,7 +3,7 @@ const Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', async accounts => {
 
-    const { toBN } = web3.utils;
+    const { toBN, toWei } = web3.utils;
 
     const getGasCost = async txObj => {
         const gasUsed = txObj.receipt.gasUsed;
@@ -100,7 +100,7 @@ contract('Splitter', async accounts => {
 
     it('Second recipient can successfully withdraw 2 wei', async () => {
 
-        const depositAmount = web3.utils.toWei(toBN(1), "ether");
+        const depositAmount = toWei(toBN(1), "ether");
         const withDrawAmount = toBN(2);
 
         // Take snapshot of the recipients ETH balance
@@ -137,7 +137,7 @@ contract('Splitter', async accounts => {
 
     it("Second recipient attempts to withdraw more than is available in the balance", async () => {
 
-        withDrawAmount = web3.utils.toWei(toBN(5), "ether");
+        withDrawAmount = toWei(toBN(5), "ether");
 
         await truffleAssert.reverts(
             splitter.withdraw(withDrawAmount, {from: recipientTwoAddress}),
