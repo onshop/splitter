@@ -65,8 +65,10 @@ contract('Splitter', async accounts => {
         assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
 
         truffleAssert.eventEmitted(txObj, 'Deposit', (ev) => {
-            return  ev.sender === senderAddress && ev.recipient1 === recipientOneAddress &&
-                    ev.recipient2 === recipientTwoAddress && ev.amount.toString(10) === "2" &&
+            return  ev.sender === senderAddress &&
+                    ev.recipient1 === recipientOneAddress &&
+                    ev.recipient2 === recipientTwoAddress &&
+                    ev.amount.toString(10) === "2" &&
                     ev.remainder.toString(10) === "1";
         }, 'TestEvent should be emitted with correct parameters');
     })
@@ -125,7 +127,8 @@ contract('Splitter', async accounts => {
         assert.strictEqual(carolContractBalance.toString(10), expectedRecipientTwoContractBalance.toString(10));
 
         truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
-            return  ev.withdrawer === recipientTwoAddress && ev.amount.toString(10) === "2";
+            return  ev.withdrawer === recipientTwoAddress &&
+                    ev.amount.toString(10) === "2";
         }, 'TestEvent should be emitted with correct parameters');
 
     });
