@@ -21,11 +21,11 @@ contract('Splitter', async accounts => {
         );
     }
 
-    const [ senderAddress, recipientOneAddress, recipientTwoAddress] = accounts;
+    const [ contractOwner, senderAddress, recipientOneAddress, recipientTwoAddress] = accounts;
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
-        splitter = await Splitter.new();
+        splitter = await Splitter.new({from: contractOwner});
     });
 
     it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei sent to the senders balance', async () => {
