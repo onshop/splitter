@@ -37,8 +37,6 @@ contract('Splitter', async accounts => {
         const txObj = await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: 5});
 
         const transfer = toBN(5);
-        const splitAmount = toBN(2);
-        const remainder = toBN(1);
 
         // Check contract's changed ETH balance
         const expectedContractEthBalance = initContractEthBalance.add(toBN(transfer));
@@ -46,19 +44,17 @@ contract('Splitter', async accounts => {
 
         assert.strictEqual(contractEthBalance.toString(10), expectedContractEthBalance.toString(10));
 
-        // Calculate the expected contract balances
-        const expectedSenderOwed = remainder;
-        const expectedRecipientOneOwed = splitAmount;
-        const expectedRecipientTwoOwed = splitAmount;
-
         // Get the actual contract balances
         const senderOwed = await splitter.balances(senderAddress);
         const recipientOneOwed = await splitter.balances(recipientOneAddress);
         const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
 
-        assert.strictEqual(senderOwed.toString(10), expectedSenderOwed.toString(10));
-        assert.strictEqual(recipientOneOwed.toString(10), expectedRecipientOneOwed.toString(10));
-        assert.strictEqual(recipientTwoOwed.toString(10), expectedRecipientTwoOwed.toString(10));
+        const splitAmount = toBN(2);
+        const remainder = toBN(1);
+
+        assert.strictEqual(senderOwed.toString(10), remainder.toString(10));
+        assert.strictEqual(recipientOneOwed.toString(10), splitAmount.toString(10));
+        assert.strictEqual(recipientTwoOwed.toString(10), splitAmount.toString(10));
 
         truffleAssert.eventEmitted(txObj, 'Deposit', (ev) => {
             return  ev.sender === senderAddress &&
