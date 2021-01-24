@@ -112,15 +112,15 @@ contract('Splitter', async accounts => {
         const cost = await getGasCost(txObj);
 
         // Get the recipient's new ETH and contract balances
-        const carolEthBalance = await web3.eth.getBalance(recipientTwoAddress);
-        const carolOwed = await splitter.balances(recipientTwoAddress);
+        const recipientTwoEthBalance = await web3.eth.getBalance(recipientTwoAddress);
+        const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
 
         // Calculate the expected new ETH and contract balances
         const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
         const expectedRecipientTwoOwed = initRecipientTwoOwed.sub(withDrawAmount);
 
-        assert.strictEqual(carolEthBalance.toString(10), expectedRecipientTwoEthBalance.toString(10));
-        assert.strictEqual(carolOwed.toString(10), expectedRecipientTwoOwed.toString(10));
+        assert.strictEqual(recipientTwoEthBalance.toString(10), expectedRecipientTwoEthBalance.toString(10));
+        assert.strictEqual(recipientTwoOwed.toString(10), expectedRecipientTwoOwed.toString(10));
 
         truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
             return  ev.withdrawer === recipientTwoAddress &&
