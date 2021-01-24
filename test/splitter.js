@@ -97,14 +97,14 @@ contract('Splitter', async accounts => {
 
         const depositAmount = toWei(toBN(1), "ether");
         const withDrawAmount = toBN(2);
-
-        // Take snapshot of theOwed recipients ETH balance
-        const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
-
+        
         // Deposit into the contract
         await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: depositAmount});
 
-        // Take snapshot of the recipients new contract balance
+        // Take a snapshot of the second recipient's ETH balance
+        const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
+        
+        // Take a snapshot of the second recipient's new contract balance
         const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
 
         // Recipient withdraws
