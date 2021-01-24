@@ -89,6 +89,33 @@ contract('Splitter', async accounts => {
         checkEventNotEmitted();
     });
 
+    it("splitDeposit is pausable", async () => {
+
+        splitter.pause({from: contractOwner});
+
+        await truffleAssert.reverts(
+            splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
+            "Pausable: paused"
+        );
+
+        const senderOwed = await splitter.balances(senderAddress);
+        const recipientOneOwed = await splitter.balances(recipientOneAddress);
+        const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
+
+        const expected = toBN(0).toString(10);
+
+        assert.strictEqual(senderOwed.toString(10), expected);
+        assert.strictEqual(recipientOneOwed.toString(10), expected);
+        assert.strictEqual(recipientTwoOwed.toString(10), expected);
+
+        splitter.unpause({from: contractOwner});
+
+        await truffleAssert.reverts(
+            splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 0}),
+            "The value must be greater than 0"
+        );
+    });
+
     it('Second recipient can successfully withdraw 2 wei', async () => {
 
         const depositAmount = toWei(toBN(1), "ether");
@@ -143,6 +170,25 @@ contract('Splitter', async accounts => {
             "The value must be greater than 0"
         );
         checkEventNotEmitted();
+    });
+
+
+
+    it("withdraw is pausable", async () => {
+
+        splitter.pause({from: contractOwner});
+
+        await truffleAssert.reverts(
+            splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
+            "Pausable: paused"
+        );
+
+        splitter.unpause({from: contractOwner});
+
+        await truffleAssert.reverts(
+            splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
+            "The value must be greater than 0"
+        );
     });
 
 });

@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >= 0.5.0 < 0.7.0;
+pragma solidity >= 0.6.0 < 0.7.0;
 
-contract Splitter {
+import "@openzeppelin/contracts/utils/Pausable.sol";
+
+contract Splitter is Pausable {
 
     mapping(address => uint) public balances;
 
@@ -18,7 +20,9 @@ contract Splitter {
         uint amount
     );
 
-    function splitDeposit(address payable recipient1, address payable recipient2) external payable{
+    constructor() Pausable() public {}
+
+    function splitDeposit(address payable recipient1, address payable recipient2) external payable whenNotPaused {
         require(msg.value > 0, "The value must be greater than 0");
         require(recipient1 != recipient2, "The first recipient is the same as the second recipient");
         require(msg.sender != recipient1 && msg.sender != recipient2, "The sender cannot also be a recipient");
@@ -37,7 +41,7 @@ contract Splitter {
         emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
     }
 
-    function withdraw(uint amount) public returns(bool) {
+    function withdraw(uint amount) public whenNotPaused returns(bool) {
         require(amount > 0, "The value must be greater than 0");
         require(balances[msg.sender] >= amount, "There are insufficient funds");
         balances[msg.sender] -= amount;
@@ -45,5 +49,13 @@ contract Splitter {
         msg.sender.transfer(amount);
 
         return true;
+    }
+
+    function pause() public {
+        super._pause();
+    }
+
+    function unpause() public {
+        super._unpause();
     }
 }
