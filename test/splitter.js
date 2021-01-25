@@ -135,8 +135,8 @@ contract('Splitter', async accounts => {
         const cost = await getGasCost(txObj);
 
         // Get the recipient's new ETH and contract balances
-        const recipientTwoEthBalance = await web3.eth.getBalance(recipientTwoAddress);
-        const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
+        const recipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
+        const recipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
 
         // Calculate the expected new ETH and contract balances
         const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
