@@ -36,7 +36,7 @@ contract Splitter is Pausable {
 
         uint remainder = SafeMath.mod(msg.value, 2);
 
-        if(remainder != 0) {
+        if (remainder != 0) {
             balances[msg.sender]  = SafeMath.add(balances[msg.sender], remainder);
         }
 
@@ -50,8 +50,8 @@ contract Splitter is Pausable {
 
         balances[msg.sender]  = SafeMath.sub(msgSender, amount);
         emit WithDraw(msg.sender, amount);
-        msg.sender.transfer(amount);
-
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Transfer failed");
         return true;
     }
 
