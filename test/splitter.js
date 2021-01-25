@@ -10,7 +10,7 @@ contract('Splitter', async accounts => {
         const tx = await web3.eth.getTransaction(txObj.tx);
         const gasPrice = tx.gasPrice;
 
-        return toBN(gasUsed * gasPrice);
+        return toBN(gasUsed).mul(toBN(gasPrice));
     };
 
     const checkEventNotEmitted = async () => {
