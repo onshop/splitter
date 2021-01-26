@@ -42,16 +42,15 @@ contract Splitter is Ownable, Pausable {
         emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
     }
 
-    function withdraw(uint amount) public whenNotPaused returns(bool) {
+    function withdraw(uint amount) public whenNotPaused returns(bool success) {
         uint256 withdrawerBalance = balances[msg.sender];
         require(amount > 0, "The value must be greater than 0");
         require(withdrawerBalance >= amount, "There are insufficient funds");
 
         balances[msg.sender]  = SafeMath.sub(withdrawerBalance, amount);
         emit WithDraw(msg.sender, amount);
-        (bool success, ) = msg.sender.call{value: amount}("");
+        (success, ) = msg.sender.call{value: amount}("");
         require(success, "Transfer failed");
-        return true;
     }
 
     function pause() public onlyOwner {
