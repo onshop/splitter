@@ -1,11 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >= 0.6.0 < 0.7.0;
 
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Pausable.sol";
 
 import {SafeMath} from "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
-contract Splitter is Pausable {
+contract Splitter is Ownable, Pausable {
 
     mapping(address => uint) public balances;
 
@@ -21,12 +22,6 @@ contract Splitter is Pausable {
         address indexed withdrawer,
         uint amount
     );
-
-    address owner;
-
-    constructor() Pausable() public {
-        owner = msg.sender;
-    }
 
     function splitDeposit(address recipient1, address recipient2) external payable whenNotPaused {
         require(msg.value > 0, "The value must be greater than 0");
@@ -59,13 +54,11 @@ contract Splitter is Pausable {
         return true;
     }
 
-    function pause() public {
-        require(msg.sender == owner, "The contract can only be paused by the owner");
+    function pause() public onlyOwner {
         super._pause();
     }
 
-    function unpause() public {
-        require(msg.sender == owner, "The contract can only be unpaused by the owner");
+    function unpause() public onlyOwner {
         super._unpause();
     }
 }

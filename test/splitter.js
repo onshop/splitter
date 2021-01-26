@@ -196,12 +196,12 @@ contract('Splitter', async accounts => {
 
         await truffleAssert.reverts(
             splitter.pause({from: recipientOne}),
-            "The contract can only be paused by the owner"
+            "Ownable: caller is not the owner"
         );
 
         await truffleAssert.reverts(
             splitter.unpause({from: recipientOne}),
-            "The contract can only be unpaused by the owner"
+            "Ownable: caller is not the owner"
         );
     });
 
