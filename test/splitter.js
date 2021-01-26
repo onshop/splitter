@@ -91,34 +91,29 @@ contract('Splitter', async accounts => {
 
     it("SplitDeposit is pausable", async () => {
 
-        splitter.pause({from: contractOwnerAddress});
+        await splitter.pause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
             splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
             "Pausable: paused"
         );
-
-        const senderOwed = await splitter.balances(senderAddress);
-        const recipientOneOwed = await splitter.balances(recipientOneAddress);
-        const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
-
-        const expected = "0";
-
-        assert.strictEqual(senderOwed.toString(10), expected);
-        assert.strictEqual(recipientOneOwed.toString(10), expected);
-        assert.strictEqual(recipientTwoOwed.toString(10), expected);
-
-        splitter.unpause({from: contractOwnerAddress});
-
-        await truffleAssert.reverts(
-            splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 0}),
-            "The value must be greater than 0"
-        );
+        checkEventNotEmitted();
     });
+
+    it("SplitDeposit is unpausable", async () => {
+
+        await splitter.pause({from: contractOwnerAddress});
+        await splitter.unpause({from: contractOwnerAddress});
+
+        const txObj = await splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 5});
+
+        truffleAssert.eventEmitted(txObj, 'Deposit');
+    })
+
 
     it('Second recipient can successfully withdraw 2 wei', async () => {
 
-        const depositAmount = toWei(toBN(1), "ether");
+        const depositAmount = toBN(5);
         const withDrawAmount = toBN(2);
         
         // Deposit into the contract
@@ -126,7 +121,7 @@ contract('Splitter', async accounts => {
 
         // Take a snapshot of the second recipient's ETH balance
         const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
-        
+
         // Take a snapshot of the second recipient's new contract balance
         const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
 
@@ -139,11 +134,11 @@ contract('Splitter', async accounts => {
         const recipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
 
         // Calculate the expected new ETH and contract balances
-        const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount);
-        const expectedRecipientTwoOwed = initRecipientTwoOwed.sub(withDrawAmount);
+        const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount).toString(10);
+        const expectedRecipientTwoOwed = "0";
 
-        assert.strictEqual(recipientTwoEthBalance.toString(10), expectedRecipientTwoEthBalance.toString(10));
-        assert.strictEqual(recipientTwoOwed.toString(10), expectedRecipientTwoOwed.toString(10));
+        assert.strictEqual(recipientTwoEthBalance.toString(10), expectedRecipientTwoEthBalance);
+        assert.strictEqual(recipientTwoOwed.toString(10), expectedRecipientTwoOwed);
 
         truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
             return  ev.withdrawer === recipientTwoAddress &&
@@ -173,7 +168,6 @@ contract('Splitter', async accounts => {
     });
 
 
-
     it("Withdraw is pausable", async () => {
 
         await splitter.pause({from: contractOwnerAddress});
@@ -182,13 +176,20 @@ contract('Splitter', async accounts => {
             splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
             "Pausable: paused"
         );
+        checkEventNotEmitted();
+    });
 
+    it("Withdraw is unpausable", async () => {
+
+        splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
+
+        await splitter.pause({from: contractOwnerAddress});
         await splitter.unpause({from: contractOwnerAddress});
 
-        await truffleAssert.reverts(
-            splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
-            "The value must be greater than 0"
-        );
+        const txObj = await splitter.withdraw(toBN(2), {from: recipientTwoAddress});
+
+        truffleAssert.eventEmitted(txObj, 'WithDraw');
+
     });
 
     it("Contract can only be paused by the owner", async () => {
