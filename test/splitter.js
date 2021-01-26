@@ -21,7 +21,7 @@ contract('Splitter', async accounts => {
         );
     }
 
-    const [ contractOwnerAddress, senderAddress, recipientOneAddress, recipientTwoAddress] = accounts;
+    const [ contractOwnerAddress, sender, recipientOne, recipientTwo] = accounts;
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
@@ -34,7 +34,7 @@ contract('Splitter', async accounts => {
         const initContractEthBalance = toBN(await web3.eth.getBalance(splitter.address));
 
         // Perform transactions
-        const txObj = await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: 5});
+        const txObj = await splitter.splitDeposit(recipientOne, recipientTwo, {from: sender, value: 5});
 
         const transfer = toBN(5);
 
@@ -45,9 +45,9 @@ contract('Splitter', async accounts => {
         assert.strictEqual(contractEthBalance.toString(10), expectedContractEthBalance.toString(10));
 
         // Get the actual contract balances
-        const senderOwed = await splitter.balances(senderAddress);
-        const recipientOneOwed = await splitter.balances(recipientOneAddress);
-        const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
+        const senderOwed = await splitter.balances(sender);
+        const recipientOneOwed = await splitter.balances(recipientOne);
+        const recipientTwoOwed = await splitter.balances(recipientTwo);
 
         const splitAmount = toBN(2);
         const remainder = toBN(1);
@@ -57,9 +57,9 @@ contract('Splitter', async accounts => {
         assert.strictEqual(recipientTwoOwed.toString(10), splitAmount.toString(10));
 
         truffleAssert.eventEmitted(txObj, 'Deposit', (ev) => {
-            return  ev.sender === senderAddress &&
-                    ev.recipient1 === recipientOneAddress &&
-                    ev.recipient2 === recipientTwoAddress &&
+            return  ev.sender === sender &&
+                    ev.recipient1 === recipientOne &&
+                    ev.recipient2 === recipientTwo &&
                     ev.amount.toString(10) === "2" &&
                     ev.remainder.toString(10) === "1";
         }, 'TestEvent should be emitted with correct parameters');
@@ -67,7 +67,7 @@ contract('Splitter', async accounts => {
 
     it("Transaction reverts if the deposit amount is zero", async () => {
         await truffleAssert.reverts(
-            splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 0}),
+            splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 0}),
             "The value must be greater than 0"
         );
         checkEventNotEmitted();
@@ -75,7 +75,7 @@ contract('Splitter', async accounts => {
 
     it("Transaction reverts if the first recipient is the same as the second recipient", async () => {
         await truffleAssert.reverts(
-            splitter.splitDeposit(recipientOneAddress, recipientOneAddress,{from: senderAddress, value: 4}),
+            splitter.splitDeposit(recipientOne, recipientOne,{from: sender, value: 4}),
             "The first recipient is the same as the second recipient"
         );
         checkEventNotEmitted();
@@ -83,7 +83,7 @@ contract('Splitter', async accounts => {
 
     it("Transaction reverts if the sender's address is also a recipient", async () => {
         await truffleAssert.reverts(
-            splitter.splitDeposit(senderAddress, recipientTwoAddress, {from: senderAddress, value: 4}),
+            splitter.splitDeposit(sender, recipientTwo, {from: sender, value: 4}),
             "The sender cannot also be a recipient"
         );
         checkEventNotEmitted();
@@ -94,7 +94,7 @@ contract('Splitter', async accounts => {
         await splitter.pause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
-            splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
+            splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
             "Pausable: paused"
         );
         checkEventNotEmitted();
@@ -105,7 +105,7 @@ contract('Splitter', async accounts => {
         await splitter.pause({from: contractOwnerAddress});
         await splitter.unpause({from: contractOwnerAddress});
 
-        const txObj = await splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 5});
+        const txObj = await splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 5});
 
         truffleAssert.eventEmitted(txObj, 'Deposit');
     })
@@ -117,21 +117,21 @@ contract('Splitter', async accounts => {
         const withDrawAmount = toBN(2);
         
         // Deposit into the contract
-        await splitter.splitDeposit(recipientOneAddress, recipientTwoAddress, {from: senderAddress, value: depositAmount});
+        await splitter.splitDeposit(recipientOne, recipientTwo, {from: sender, value: depositAmount});
 
         // Take a snapshot of the second recipient's ETH balance
-        const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
+        const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwo));
 
         // Take a snapshot of the second recipient's new contract balance
-        const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
+        const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwo));
 
         // Recipient withdraws
-        const txObj = await splitter.withdraw(withDrawAmount, {from: recipientTwoAddress});
+        const txObj = await splitter.withdraw(withDrawAmount, {from: recipientTwo});
         const cost = await getGasCost(txObj);
 
         // Get the recipient's new ETH and contract balances
-        const recipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwoAddress));
-        const recipientTwoOwed = toBN(await splitter.balances(recipientTwoAddress));
+        const recipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwo));
+        const recipientTwoOwed = toBN(await splitter.balances(recipientTwo));
 
         // Calculate the expected new ETH and contract balances
         const expectedRecipientTwoEthBalance = initRecipientTwoEthBalance.sub(cost).add(withDrawAmount).toString(10);
@@ -141,7 +141,7 @@ contract('Splitter', async accounts => {
         assert.strictEqual(recipientTwoOwed.toString(10), expectedRecipientTwoOwed);
 
         truffleAssert.eventEmitted(txObj, "WithDraw", (ev) => {
-            return  ev.withdrawer === recipientTwoAddress &&
+            return  ev.withdrawer === recipientTwo &&
                     ev.amount.toString(10) === "2";
         }, 'TestEvent should be emitted with correct parameters');
 
@@ -152,7 +152,7 @@ contract('Splitter', async accounts => {
         withDrawAmount = toWei(toBN(5), "ether");
 
         await truffleAssert.reverts(
-            splitter.withdraw(withDrawAmount, {from: recipientTwoAddress}),
+            splitter.withdraw(withDrawAmount, {from: recipientTwo}),
             "There are insufficient funds"
         );
         checkEventNotEmitted();
@@ -161,7 +161,7 @@ contract('Splitter', async accounts => {
     it("Second recipient attempts to withdraw zero", async () => {
 
         await truffleAssert.reverts(
-            splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
+            splitter.withdraw(toBN(0), {from: recipientTwo}),
             "The value must be greater than 0"
         );
         checkEventNotEmitted();
@@ -173,7 +173,7 @@ contract('Splitter', async accounts => {
         await splitter.pause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
-            splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
+            splitter.withdraw(toBN(0), {from: recipientTwo}),
             "Pausable: paused"
         );
         checkEventNotEmitted();
@@ -181,12 +181,12 @@ contract('Splitter', async accounts => {
 
     it("Withdraw is unpausable", async () => {
 
-        splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
+        splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
 
         await splitter.pause({from: contractOwnerAddress});
         await splitter.unpause({from: contractOwnerAddress});
 
-        const txObj = await splitter.withdraw(toBN(2), {from: recipientTwoAddress});
+        const txObj = await splitter.withdraw(toBN(2), {from: recipientTwo});
 
         truffleAssert.eventEmitted(txObj, 'WithDraw');
 
@@ -195,12 +195,12 @@ contract('Splitter', async accounts => {
     it("Contract can only be paused by the owner", async () => {
 
         await truffleAssert.reverts(
-            splitter.pause({from: recipientOneAddress}),
+            splitter.pause({from: recipientOne}),
             "The contract can only be paused by the owner"
         );
 
         await truffleAssert.reverts(
-            splitter.unpause({from: recipientOneAddress}),
+            splitter.unpause({from: recipientOne}),
             "The contract can only be unpaused by the owner"
         );
     });
