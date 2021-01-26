@@ -22,7 +22,10 @@ contract Splitter is Pausable {
         uint amount
     );
 
-    constructor() Pausable() public {}
+    address owner;
+
+    constructor() Pausable() public {
+        owner = msg.sender;
     }
 
     function splitDeposit(address payable recipient1, address payable recipient2) external payable whenNotPaused {
@@ -57,10 +60,12 @@ contract Splitter is Pausable {
     }
 
     function pause() public {
+        require(msg.sender == owner, "The contract can only be paused by the owner");
         super._pause();
     }
 
     function unpause() public {
+        require(msg.sender == owner, "The contract can only be unpaused by the owner");
         super._unpause();
     }
 }

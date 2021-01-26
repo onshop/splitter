@@ -21,11 +21,11 @@ contract('Splitter', async accounts => {
         );
     }
 
-    const [ contractOwner, senderAddress, recipientOneAddress, recipientTwoAddress] = accounts;
+    const [ contractOwnerAddress, senderAddress, recipientOneAddress, recipientTwoAddress] = accounts;
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
-        splitter = await Splitter.new({from: contractOwner});
+        splitter = await Splitter.new({from: contractOwnerAddress});
     });
 
     it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei sent to the senders balance', async () => {
@@ -89,9 +89,9 @@ contract('Splitter', async accounts => {
         checkEventNotEmitted();
     });
 
-    it("splitDeposit is pausable", async () => {
+    it("SplitDeposit is pausable", async () => {
 
-        splitter.pause({from: contractOwner});
+        splitter.pause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
             splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 4}),
@@ -108,7 +108,7 @@ contract('Splitter', async accounts => {
         assert.strictEqual(recipientOneOwed.toString(10), expected);
         assert.strictEqual(recipientTwoOwed.toString(10), expected);
 
-        splitter.unpause({from: contractOwner});
+        splitter.unpause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
             splitter.splitDeposit(recipientTwoAddress, recipientOneAddress,{from: senderAddress, value: 0}),
@@ -174,20 +174,33 @@ contract('Splitter', async accounts => {
 
 
 
-    it("withdraw is pausable", async () => {
+    it("Withdraw is pausable", async () => {
 
-        splitter.pause({from: contractOwner});
+        splitter.pause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
             splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
             "Pausable: paused"
         );
 
-        splitter.unpause({from: contractOwner});
+        splitter.unpause({from: contractOwnerAddress});
 
         await truffleAssert.reverts(
             splitter.withdraw(toBN(0), {from: recipientTwoAddress}),
             "The value must be greater than 0"
+        );
+    });
+
+    it("Contract can only be paused by the owner", async () => {
+
+        await truffleAssert.reverts(
+            splitter.pause({from: recipientOneAddress}),
+            "The contract can only be paused by the owner"
+        );
+
+        await truffleAssert.reverts(
+            splitter.unpause({from: recipientOneAddress}),
+            "The contract can only be unpaused by the owner"
         );
     });
 
