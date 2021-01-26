@@ -102,7 +102,7 @@ contract('Splitter', async accounts => {
         const recipientOneOwed = await splitter.balances(recipientOneAddress);
         const recipientTwoOwed = await splitter.balances(recipientTwoAddress);
 
-        const expected = toBN(0).toString(10);
+        const expected = "0";
 
         assert.strictEqual(senderOwed.toString(10), expected);
         assert.strictEqual(recipientOneOwed.toString(10), expected);
