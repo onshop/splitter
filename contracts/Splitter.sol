@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >= 0.6.0 < 0.7.0;
 
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "../node_modules/@openzeppelin/contracts/utils/Pausable.sol";
 
-import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {SafeMath} from "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
 contract Splitter is Pausable {
 
@@ -23,6 +23,7 @@ contract Splitter is Pausable {
     );
 
     constructor() Pausable() public {}
+    }
 
     function splitDeposit(address payable recipient1, address payable recipient2) external payable whenNotPaused {
         require(msg.value > 0, "The value must be greater than 0");
