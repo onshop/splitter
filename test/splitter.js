@@ -122,9 +122,6 @@ contract('Splitter', async accounts => {
         // Take a snapshot of the second recipient's ETH balance
         const initRecipientTwoEthBalance = toBN(await web3.eth.getBalance(recipientTwo));
 
-        // Take a snapshot of the second recipient's new contract balance
-        const initRecipientTwoOwed = toBN(await splitter.balances(recipientTwo));
-
         // Recipient withdraws
         const txObj = await splitter.withdraw(withDrawAmount, {from: recipientTwo});
         const cost = await getGasCost(txObj);
@@ -181,7 +178,7 @@ contract('Splitter', async accounts => {
 
     it("Withdraw is unpausable", async () => {
 
-        splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
+        await splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
 
         await splitter.pause({from: contractOwnerAddress});
         await splitter.unpause({from: contractOwnerAddress});
