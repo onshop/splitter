@@ -48,11 +48,11 @@ contract Splitter is Pausable {
     }
 
     function withdraw(uint amount) public whenNotPaused returns(bool) {
-        uint256 msgSender = balances[msg.sender];
+        uint256 senderBalance = balances[msg.sender];
         require(amount > 0, "The value must be greater than 0");
-        require(msgSender >= amount, "There are insufficient funds");
+        require(senderBalance >= amount, "There are insufficient funds");
 
-        balances[msg.sender]  = SafeMath.sub(msgSender, amount);
+        balances[msg.sender]  = SafeMath.sub(senderBalance, amount);
         emit WithDraw(msg.sender, amount);
         (bool success, ) = msg.sender.call{value: amount}("");
         require(success, "Transfer failed");
