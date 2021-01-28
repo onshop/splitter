@@ -36,7 +36,7 @@ contract Splitter is Ownable, Pausable {
         uint remainder = SafeMath.mod(msg.value, 2);
 
         if (remainder != 0) {
-            balances[msg.sender]  = SafeMath.add(balances[msg.sender], remainder);
+            balances[msg.sender] = SafeMath.add(balances[msg.sender], remainder);
         }
 
         emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
@@ -47,7 +47,7 @@ contract Splitter is Ownable, Pausable {
         require(amount > 0, "The value must be greater than 0");
         require(withdrawerBalance >= amount, "There are insufficient funds");
 
-        balances[msg.sender]  = SafeMath.sub(withdrawerBalance, amount);
+        balances[msg.sender] = SafeMath.sub(withdrawerBalance, amount);
         emit WithDraw(msg.sender, amount);
         (success, ) = msg.sender.call{value: amount}("");
         require(success, "Transfer failed");
