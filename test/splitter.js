@@ -133,12 +133,12 @@ contract('Splitter', async accounts => {
 
     });
 
-    it("Second recipient attempts to withdraw more than is available in the balance", async () => {
+    it("Second recipient attempts to withdraw 3 wei when there is only 3 wei", async () => {
 
-        withDrawAmount = toWei(toBN(5), "ether");
+        await splitter.splitDeposit(recipientOne, recipientTwo, {from: sender, value: toBN(5)});
 
         await truffleAssert.reverts(
-            splitter.withdraw(withDrawAmount, {from: recipientTwo}),
+            splitter.withdraw(toBN(3), {from: recipientTwo}),
             "There are insufficient funds"
         );
         checkEventNotEmitted();
