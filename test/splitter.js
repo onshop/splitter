@@ -156,10 +156,12 @@ contract('Splitter', async accounts => {
 
     it("Withdraw is pausable", async () => {
 
+        await splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
+
         await splitter.pause({from: contractOwner});
 
         await truffleAssert.reverts(
-            splitter.withdraw(toBN(0), {from: recipientTwo}),
+            splitter.withdraw(toBN(2), {from: recipientTwo}),
             "Pausable: paused"
         );
         checkEventNotEmitted();
