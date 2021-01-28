@@ -19,11 +19,11 @@ contract('Splitter', async accounts => {
         );
     }
 
-    const [ contractOwnerAddress, sender, recipientOne, recipientTwo] = accounts;
+    const [ contractOwner, sender, recipientOne, recipientTwo] = accounts;
     let splitter;
 
     beforeEach("deploy and prepare", async function() {
-        splitter = await Splitter.new({from: contractOwnerAddress});
+        splitter = await Splitter.new({from: contractOwner});
     });
 
     it('Sender sends 5 wei, 4 wei is split equally between recipients and 1 wei sent to the senders balance', async () => {
@@ -82,7 +82,7 @@ contract('Splitter', async accounts => {
 
     it("SplitDeposit is pausable", async () => {
 
-        await splitter.pause({from: contractOwnerAddress});
+        await splitter.pause({from: contractOwner});
 
         await truffleAssert.reverts(
             splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
@@ -93,8 +93,8 @@ contract('Splitter', async accounts => {
 
     it("SplitDeposit is unpausable", async () => {
 
-        await splitter.pause({from: contractOwnerAddress});
-        await splitter.unpause({from: contractOwnerAddress});
+        await splitter.pause({from: contractOwner});
+        await splitter.unpause({from: contractOwner});
 
         const txObj = await splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 5});
 
@@ -156,7 +156,7 @@ contract('Splitter', async accounts => {
 
     it("Withdraw is pausable", async () => {
 
-        await splitter.pause({from: contractOwnerAddress});
+        await splitter.pause({from: contractOwner});
 
         await truffleAssert.reverts(
             splitter.withdraw(toBN(0), {from: recipientTwo}),
@@ -169,8 +169,8 @@ contract('Splitter', async accounts => {
 
         await splitter.splitDeposit(recipientTwo, recipientOne,{from: sender, value: 4}),
 
-        await splitter.pause({from: contractOwnerAddress});
-        await splitter.unpause({from: contractOwnerAddress});
+        await splitter.pause({from: contractOwner});
+        await splitter.unpause({from: contractOwner});
 
         const txObj = await splitter.withdraw(toBN(2), {from: recipientTwo});
 
