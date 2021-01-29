@@ -1,8 +1,13 @@
-/tmp-*
+# truffle system files
+.node-xmlhttprequest-*
+truffle-config.js
+tmp-*
 
 # truffle build directory
-client/src/contracts
+/client/src/contracts/
+/contracts/artifacts/
 
+# system files
 *.swp
 *.swo
 
@@ -22,10 +27,8 @@ npm-debug.log
 # macOS
 .DS_Store
 
-# truffle
-.node-xmlhttprequest-*
-
 # IntelliJ IDE
 .idea
+
 
 

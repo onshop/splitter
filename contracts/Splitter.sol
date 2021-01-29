@@ -1,40 +1,65 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >= 0.5.0 < 0.7.0;
+pragma solidity >= 0.6.0 < 0.7.0;
 
-contract Splitter {
-    
-    address sender = 0xA2aDe56e2c69589eaFA636C845b296718D5766fd; //Alice
-    
-    address payable[] internal recipients = [0x20601F1Ddb44E28b1511EdBD316A368D80116408, //"Bob";
-                                            0x24F1500890505ceD8534502ab403F20ce99feea0]; //"Carol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "../node_modules/@openzeppelin/contracts/utils/Pausable.sol";
 
-    event Deposit(uint date,
-                  address indexed _from,
-                  address indexed _to,
-                  uint amount);
+import {SafeMath} from "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
-    function deposit() external payable{
-        doDeposit(msg.sender, msg.value);
+contract Splitter is Ownable, Pausable {
+
+    using SafeMath for uint;
+
+    mapping(address => uint) public balances;
+
+    event Deposit(
+        address indexed sender,
+        address indexed recipient1,
+        address indexed recipient2,
+        uint amount,
+        uint remainder
+    );
+
+    event WithDraw(
+        address indexed withdrawer,
+        uint amount
+    );
+
+    function splitDeposit(address recipient1, address recipient2) external payable whenNotPaused {
+        require(msg.value > 0, "The value must be greater than 0");
+        require(recipient1 != recipient2, "The first recipient is the same as the second recipient");
+        require(msg.sender != recipient1 && msg.sender != recipient2, "The sender cannot also be a recipient");
+
+        uint split = msg.value / 2;
+
+        balances[recipient1] = balances[recipient1].add(split);
+        balances[recipient2] = balances[recipient2].add(split);
+
+        uint remainder = SafeMath.mod(msg.value, 2);
+
+        if (remainder != 0) {
+            balances[msg.sender] = balances[msg.sender].add(remainder);
+        }
+
+        emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
     }
 
-    function doDeposit(address _sender, uint _value) public payable {
-        if(_sender != sender){
-            revert("Only Alice can send ether");
-        }
-        
-        uint split = split(_value);
-        
-        for (uint i=0; i < recipients.length; i++) {
-            recipients[i].transfer(split);
+    function withdraw(uint amount) public whenNotPaused returns(bool success) {
+        uint256 withdrawerBalance = balances[msg.sender];
+        require(amount > 0, "The value must be greater than 0");
+        require(withdrawerBalance >= amount, "There are insufficient funds");
 
-            emit Deposit(now, _sender, recipients[i], split);
-        }
+        balances[msg.sender] = SafeMath.sub(withdrawerBalance, amount);
+        emit WithDraw(msg.sender, amount);
+        (success, ) = msg.sender.call{value: amount}("");
+        require(success, "Transfer failed");
     }
 
-    function split(uint amount) internal pure returns(uint) {
-        if(amount % 2 != 0) {
-            revert("This odd number cannot be split");
-        }
-        return amount / 2;
+    function pause() public onlyOwner {
+        super._pause();
+    }
+
+    function unpause() public onlyOwner {
+        super._unpause();
     }
 }
