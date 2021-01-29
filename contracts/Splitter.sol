@@ -8,6 +8,8 @@ import {SafeMath} from "../node_modules/@openzeppelin/contracts/math/SafeMath.so
 
 contract Splitter is Ownable, Pausable {
 
+    using SafeMath for uint;
+
     mapping(address => uint) public balances;
 
     event Deposit(
@@ -30,13 +32,13 @@ contract Splitter is Ownable, Pausable {
 
         uint split = msg.value / 2;
 
-        balances[recipient1] = SafeMath.add(balances[recipient1], split);
-        balances[recipient2] = SafeMath.add(balances[recipient2], split);
+        balances[recipient1] = balances[recipient1].add(split);
+        balances[recipient2] = balances[recipient2].add(split);
 
         uint remainder = SafeMath.mod(msg.value, 2);
 
         if (remainder != 0) {
-            balances[msg.sender] = SafeMath.add(balances[msg.sender], remainder);
+            balances[msg.sender] = balances[msg.sender].add(remainder);
         }
 
         emit Deposit(msg.sender, recipient1, recipient2, split, remainder);
