@@ -3,13 +3,13 @@ const Splitter = artifacts.require("./Splitter.sol");
 
 contract('Splitter', async accounts => {
 
-    const { toBN, toWei } = web3.utils;
+    const { toBN } = web3.utils;
 
     const getGasCost = async txObj => {
         const tx = await web3.eth.getTransaction(txObj.tx);
 
         return toBN(txObj.receipt.gasUsed).mul(toBN(tx.gasPrice));
-    }
+    };
 
     const checkEventNotEmitted = async () => {
         const result = await truffleAssert.createTransactionResult(splitter, splitter.transactionHash);
@@ -17,7 +17,7 @@ contract('Splitter', async accounts => {
         await truffleAssert.eventNotEmitted(
             result
         );
-    }
+    };
 
     const [ contractOwner, sender, recipientOne, recipientTwo] = accounts;
     let splitter;
@@ -30,8 +30,6 @@ contract('Splitter', async accounts => {
 
         // Perform transactions
         const txObj = await splitter.splitDeposit(recipientOne, recipientTwo, {from: sender, value: 5});
-
-        const transfer = toBN(5);
 
         // Check contract's changed ETH balance
         const contractEthBalance = toBN(await web3.eth.getBalance(splitter.address));
@@ -145,6 +143,8 @@ contract('Splitter', async accounts => {
     });
 
     it("Second recipient attempts to withdraw zero", async () => {
+
+        await splitter.splitDeposit(recipientOne, recipientTwo, {from: sender, value: toBN(5)});
 
         await truffleAssert.reverts(
             splitter.withdraw(toBN(0), {from: recipientTwo}),
